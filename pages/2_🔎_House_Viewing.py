@@ -9,6 +9,7 @@ from PIL import Image
 import DR_Predict
 import Helpers
 
+
 predictions = pd.read_csv('./Data/Prediction_Explanations.csv')
 small_df = pd.read_csv('./Data_Cleansing_DF/clean_small_data.csv')
 
@@ -27,6 +28,8 @@ with st.form(key='View_form'):
 
 if view_button:
     view_df = df.loc[df['listing_id']==int(listing_select)]
+    st.session_state['viewing_data'] = view_df
+
     house_img = str(list(view_df['exterior_image'])[0])
     img_jpg = Image.open('./Data/HousingAllFeatures/' + house_img)
     viewing_expl_df = predictions[predictions['listing_id']==listing_select]
@@ -104,6 +107,7 @@ if view_button:
             feat3.write(explain3+' negatively impacts prediction')
 
     st.write('> #### House Features')
+    st.write('Price prediction form will be autofilled with values from selected listing')
     st.write(view_df)
 
 st.write('> #### Available Viewings')
