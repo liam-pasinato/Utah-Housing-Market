@@ -11,7 +11,7 @@ import Helpers
 
 
 predictions = pd.read_csv('./Data/Prediction_Explanations.csv')
-small_df = pd.read_csv('./Data_Cleansing_DF/clean_small_data.csv')
+small_df = pd.read_csv('./Data/clean_small_data.csv')
 
 try:
     df = st.session_state['base_data']
@@ -24,6 +24,7 @@ st.write('# House Viewings')
 with st.form(key='View_form'):
     listings = sorted(predictions['listing_id'].astype(int).unique())
     listing_select = st.selectbox('Enter the listing ID for the house you would like to view', listings, help = 'Use the table below to find the correct listing ID')
+    st.write('Price prediction form will be autofilled with values from selected listing')
     view_button = st.form_submit_button(label = 'View House')
 
 if view_button:
@@ -107,7 +108,27 @@ if view_button:
             feat3.write(explain3+' negatively impacts prediction')
 
     st.write('> #### House Features')
-    st.write('Price prediction form will be autofilled with values from selected listing')
+
+    #cleaning view df
+    view_df = view_df.drop(['zip_geometry', 'exterior_image'], axis=1)
+    view_df = view_df.rename(columns={'listing_id': 'Listing ID', 'price': 'Price', 'acres': 'Acres', 'bathrooms': 'Bath', 'bedrooms': 'Bed', 'car_garage': 'Car Garage', 'patios': 'Patios', 'sq_ft': 'Sq. Footage', 'cooling': 'Cooling', 'elementary': 'Elementary School', 'flooring': 'Floors', 'roof_type': 'Roofing', 'year_built': 'Build Year', 'amenities': 'Amenities', 'sold_date': 'Sold Date'})
+    view_df['Patios'] = view_df['Patios'].fillna(-1)
+    view_df['Patios'] = view_df['Patios'].astype(int)
+    view_df['Patios'] = view_df['Patios'].astype(str)
+    view_df['Patios'] = view_df['Patios'].replace('-1', np.nan)
+    view_df['Car Garage'] = view_df['Car Garage'].fillna(-1)
+    view_df['Car Garage'] = view_df['Car Garage'].astype(int)
+    view_df['Car Garage'] = view_df['Car Garage'].astype(str)
+    view_df['Car Garage'] = view_df['Car Garage'].replace('-1', np.nan)
+    view_df['Sq. Footage'] = view_df['Sq. Footage'].fillna(-1)
+    view_df['Sq. Footage'] = view_df['Sq. Footage'].astype(int)
+    view_df['Sq. Footage'] = view_df['Sq. Footage'].astype(str)
+    view_df['Sq. Footage'] = view_df['Sq. Footage'].replace('-1', np.nan)
+    view_df['Bed'] = view_df['Bed'].fillna(-1)
+    view_df['Bed'] = view_df['Bed'].astype(int)
+    view_df['Bed'] = view_df['Bed'].astype(str)
+    view_df['Bed'] = view_df['Bed'].replace('-1', np.nan)
+    
     st.write(view_df)
 
 st.write('> #### Available Viewings')
@@ -116,9 +137,27 @@ st.write('> #### Available Viewings')
 bdrms = sorted(small_df['bedrooms'].astype(int).unique())
 bdrm_selection = st.selectbox("Bedrooms", bdrms, index=2)
 
+bath_select = st.multiselect('Filter by bathrooms', sorted(small_df['bathrooms'].astype(int).unique()))
+
 #Display selectBox & the data
 st.write('*Showing data for ' + str(bdrm_selection) + ' bedroom houses*')
 df_bdrm = small_df[small_df['bedrooms']==bdrm_selection]
+###df_bdrm - small_df[small_df['bathrooms']==bath_select]
+
+#Removing unnecessary cols and renaming cols
+df_bdrm = df_bdrm.drop(['zip_geometry','exterior_image',], axis=1)
+df_bdrm = df_bdrm.rename(columns={'listing_id': 'Listing ID', 'price': 'Price', 'acres': 'Acres', 'bathrooms': 'Bath', 'bedrooms': 'Bed', 'car_garage': 'Car Garage', 'patios': 'Patios', 'sq_ft': 'Sq. Footage', 'cooling': 'Cooling', 'elementary': 'Elementary School', 'flooring': 'Floors', 'roof_type': 'Roofing', 'year_built': 'Build Year', 'amenities': 'Amenities', 'sold_date': 'Sold Date'})
+
+#Converting float to int
+df_bdrm['Car Garage'] = df_bdrm['Car Garage'].fillna(-1)
+df_bdrm['Car Garage'] = df_bdrm['Car Garage'].astype(int)
+df_bdrm['Car Garage'] = df_bdrm['Car Garage'].astype(str)
+df_bdrm['Car Garage'] = df_bdrm['Car Garage'].replace('-1', np.nan)
+df_bdrm['Patios'] = df_bdrm['Patios'].fillna(-1)
+df_bdrm['Patios'] = df_bdrm['Patios'].astype(int)
+df_bdrm['Patios'] = df_bdrm['Patios'].astype(str)
+df_bdrm['Patios'] = df_bdrm['Patios'].replace('-1', np.nan)
+
 st.write(df_bdrm)
 
 
