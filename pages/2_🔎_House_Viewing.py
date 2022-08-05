@@ -1,8 +1,10 @@
 from cgitb import small
+
 import streamlit as st 
 import pandas as pd
 import numpy as np
-import plotly.express as px  
+import plotly.express as px
+ 
 
 from PIL import Image
 
@@ -133,31 +135,41 @@ if view_button:
 
 st.write('> #### Available Viewings')
 
-#Selectbox
-bdrms = sorted(small_df['bedrooms'].astype(int).unique())
-bdrm_selection = st.selectbox("Bedrooms", bdrms, index=2)
+#Multiselect boxes for filtering
+filt1, filt2, filt3 = st.columns(3, gap='medium')
 
-bath_select = st.multiselect('Filter by bathrooms', sorted(small_df['bathrooms'].astype(int).unique()))
+with filt1:
+    bed_filt = st.multiselect('Filter by bedrooms', sorted(small_df['bedrooms'].astype(int).unique()))
+    bath_filt = st.multiselect('Filter by bathrooms', sorted(small_df['bathrooms'].astype(int).unique()))
 
-#Display selectBox & the data
-st.write('*Showing data for ' + str(bdrm_selection) + ' bedroom houses*')
-df_bdrm = small_df[small_df['bedrooms']==bdrm_selection]
-###df_bdrm - small_df[small_df['bathrooms']==bath_select]
+with filt2:
+    garage_filt = st.multiselect('Filter by garage size', [0,1,2,3,4,5,6])
+    patio_filt = st.multiselect('Filter by patios', [0,1,2])
+    
+with filt3:
+    price_filt = st.selectbox('Filter by price', ['40000 - 100000', '100000 - 250000', '250000 - 500000', '500000 - 750000', '750000 - 1000000', '1000000 - 1500000', '1500000 - 2000000'], index=3 )
+    sqft_filt = st.selectbox('Filter by square footage', ['500 - 1000', '1000 - 1500', '1500 - 2000', '2000 - 3000', '3000 - 4000', '4000 - 5000', '5000 - 6500'], index=3)
 
 #Removing unnecessary cols and renaming cols
-df_bdrm = df_bdrm.drop(['zip_geometry','exterior_image',], axis=1)
-df_bdrm = df_bdrm.rename(columns={'listing_id': 'Listing ID', 'price': 'Price', 'acres': 'Acres', 'bathrooms': 'Bath', 'bedrooms': 'Bed', 'car_garage': 'Car Garage', 'patios': 'Patios', 'sq_ft': 'Sq. Footage', 'cooling': 'Cooling', 'elementary': 'Elementary School', 'flooring': 'Floors', 'roof_type': 'Roofing', 'year_built': 'Build Year', 'amenities': 'Amenities', 'sold_date': 'Sold Date'})
+df_filt = small_df.drop(['zip_geometry','exterior_image'], axis=1)
+df_filt = df_filt.rename(columns={'listing_id': 'Listing ID', 'price': 'Price', 'acres': 'Acres', 'bathrooms': 'Bath', 'bedrooms': 'Bed', 'car_garage': 'Car Garage', 'patios': 'Patios', 'sq_ft': 'Sq. Footage', 'cooling': 'Cooling', 'elementary': 'Elementary School', 'flooring': 'Floors', 'roof_type': 'Roofing', 'year_built': 'Build Year', 'amenities': 'Amenities', 'sold_date': 'Sold Date'})
+
+#Filtering by multiselect & select boxes
+##df_filt = df_filt[df_filt['Bed'].isin(bed_filt)]
+##df_filt = df_filt[df_filt['Bath'].isin(bath_filt)]
+##df_filt = df_filt[df_filt['Car Garage'].isin(garage_filt)]
+##df_filt = df_filt[df_filt['Patios'].isin(patio_filt)]
 
 #Converting float to int
-df_bdrm['Car Garage'] = df_bdrm['Car Garage'].fillna(-1)
-df_bdrm['Car Garage'] = df_bdrm['Car Garage'].astype(int)
-df_bdrm['Car Garage'] = df_bdrm['Car Garage'].astype(str)
-df_bdrm['Car Garage'] = df_bdrm['Car Garage'].replace('-1', np.nan)
-df_bdrm['Patios'] = df_bdrm['Patios'].fillna(-1)
-df_bdrm['Patios'] = df_bdrm['Patios'].astype(int)
-df_bdrm['Patios'] = df_bdrm['Patios'].astype(str)
-df_bdrm['Patios'] = df_bdrm['Patios'].replace('-1', np.nan)
+df_filt['Car Garage'] = df_filt['Car Garage'].fillna(-1)
+df_filt['Car Garage'] = df_filt['Car Garage'].astype(int)
+df_filt['Car Garage'] = df_filt['Car Garage'].astype(str)
+df_filt['Car Garage'] = df_filt['Car Garage'].replace('-1', np.nan)
+df_filt['Patios'] = df_filt['Patios'].fillna(-1)
+df_filt['Patios'] = df_filt['Patios'].astype(int)
+df_filt['Patios'] = df_filt['Patios'].astype(str)
+df_filt['Patios'] = df_filt['Patios'].replace('-1', np.nan)
 
-st.write(df_bdrm)
+st.write(df_filt)
 
 

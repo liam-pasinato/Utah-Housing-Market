@@ -1,8 +1,10 @@
 import streamlit as st 
 import pandas as pd
 import numpy as np
+import json
 import plotly.express as px  
 import os
+import geopandas as gpd
 
 from PIL import Image
 
@@ -15,26 +17,54 @@ st.title("*Utah* Real Estate Market")
 
 #Full DF
 df = Helpers.read_data("./Data/HousingAllFeatures/HousingAllFeatures.csv")
-#df = (pd.read_csv("./Data/HousingAllFeatures/HousingAllFeatures.csv")
-    #.loc[lambda x: ~pd.isna(x.bedrooms)]
-#)
-
 
 #Cutting columns for display
 showcase_df = df.drop(['cooling','flooring','roof_type','zip_geometry','exterior_image'], axis=1)
 
+#"About" dropdown 
+with st.expander("About:"):
+    st.write("This webpage uses a machine learning model made on DataRobot's ML platform to predict house prices in the state of Utah.")
+    st.write("The model was trained on a demo dataset containing thousands of house listings from Utah and their respective features.")
+    st.write("The house viewing page allows you to view a single listing in more detail, along with the real and predicted values for the house and explanations for the house price.")
+    st.write("The price prediction page allows you to send a new listing to the DataRobot app, and ping the ML model to predict the price of the house with the feautures you have set. This includes explanations behind what is driving the model to estimate the house's value.")
 
-st.write('> ## *Utah* Housing Data')
-st.write('##### Use the toolbar to filter through home listings')
+#MAP!
+map_data = pd.read_csv('./Data/clean_small_data.csv')
+color_choices = ['price', 'sq_ft', 'acres']
 
-#Selectbox
-bdrms = sorted(showcase_df['bedrooms'].astype(int).unique())
-bdrm_selection = st.selectbox("Bedrooms", bdrms, index=4)
+#Geometry is at zipcode level, should make whatever we want to plot also be at zipcode level
+df_zip_agg = (map_data
+    .groupby('zip_geometry')[color_choices]
+    .mean()
+    .reset_index()
+    .assign(
+        price = lambda x: x.price.astype(int),
+        sq_ft = lambda x: x.sq_ft.astype(int),
+        acres = lambda x: x.acres.round(2),
+        price_per_sq_ft = lambda x: (x.price / x.sq_ft).round(2)
+    )
+    )
 
-#Display selectBox & the data
-st.write('*Showing data for ' + str(bdrm_selection) + ' bedroom houses*')
-df_bdrm = showcase_df[showcase_df['bedrooms']==bdrm_selection]
-st.write(df_bdrm)
+#Zip geometry is read as a string, need to transform it into an actual geometry column type (gpd)
+# https://stackoverflow.com/questions/56433138/converting-a-column-of-polygons-from-string-to-geopandas-geometry
+df_zip_agg['zip_geometry'] = gpd.GeoSeries.from_wkt(df_zip_agg['zip_geometry'])
+average_price_per_geometry = gpd.GeoDataFrame(df_zip_agg, geometry='zip_geometry').assign(id_col = lambda x: x.index)
 
+#Polygon doesn't look like plotly format
+# We can fix with a small trick (this was a guess on my part). Another choice was an in depth for loop
+json_string = (average_price_per_geometry
+               .loc[~pd.isna(average_price_per_geometry.zip_geometry), ['id_col', 'zip_geometry']]
+               .to_json()
+              )
+geo_json = json.loads(json_string)
 
+# We need a centroid sale lake city 40.7608° N, 111.8910° W
+color_column = 'price_per_sq_ft'
 
+fig = px.choropleth_mapbox(average_price_per_geometry, geojson=geo_json, color=color_column,
+                           locations="id_col", featureidkey="properties.id_col",
+                           center={"lat": 40.7608, "lon":-110.8910},
+                           mapbox_style="carto-positron", zoom=6,
+                           labels={'price_per_sq_ft': 'Price per Sq. Foot'})
+                           
+st.plotly_chart(fig)
