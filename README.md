@@ -8,4 +8,4 @@ Streamlit app with features & data related to a "Utah Housing" demo dataset.
 4. Get multiselect to alter DF & work together at once
 5. Get range filters to work; price & sqft
 6. Make functions to reduce repetition
-
+7. Zip Geo explanation show map id & price/sq ft

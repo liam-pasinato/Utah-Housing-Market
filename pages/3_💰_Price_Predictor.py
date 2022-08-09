@@ -1,6 +1,6 @@
+import numpy as np
 import os
 
-import numpy as np
 import pandas as pd
 from PIL import Image
 import plotly.express as px
@@ -120,9 +120,6 @@ if submit_button:
 
     df_predict_json = df_predict.to_json(orient="records")
 
-    # # Method 1
-    # df_predict.to_csv('temp_encoded.csv',index=False)
-    # data = open('temp_encoded.csv','rb').read()
 
     with loading:
         with st.spinner("Getting prediction, this might take a minute..."):
@@ -136,6 +133,11 @@ if submit_button:
     explain1 = res[0]["predictionExplanations"][0]["feature"]
     explain2 = res[0]["predictionExplanations"][1]["feature"]
     explain3 = res[0]["predictionExplanations"][2]["feature"]
+
+    explain1 = Helpers.clean_string(explain1)
+    explain2 = Helpers.clean_string(explain2)
+    explain3 = Helpers.clean_string(explain3)
+
     value1 = str(res[0]["predictionExplanations"][0]["featureValue"])
     value2 = str(res[0]["predictionExplanations"][1]["featureValue"])
     value3 = str(res[0]["predictionExplanations"][2]["featureValue"])
