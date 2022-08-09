@@ -6,7 +6,6 @@ from PIL import Image
 import plotly.express as px
 import streamlit as st
 
-
 import DR_Predict
 import Helpers
 
@@ -93,32 +92,7 @@ xAxis = st.selectbox(
 )
 
 fig1 = st.container().empty()
-plotting_df = st.session_state.get("update_graph_df", predictions)
-# Scatter plot
-fig = px.scatter(
-    plotting_df,
-    x=xAxis,
-    y="price_PREDICTION",
-    labels={
-        "price_PREDICTION": "Predicted Price",
-        "sq_ft": "Square Footage",
-        "price": "Actual Price",
-        "acres": "Acres",
-        "bathrooms": "Bathrooms",
-        "bedrooms": "Bedrooms",
-    },
-)
 
-fig.update_layout(
-    font=dict(size=16, color="LightBlue"),
-    title={"text": "Pricing Plot", "x": 0.5, "xanchor": "center", "yanchor": "top"},
-)
-
-fig.update_traces(
-    marker=dict(size=10, color="blue", line=dict(width=2, color="DarkSlateGrey")),
-    selector=dict(mode="markers"),
-)
-fig1.plotly_chart(fig)
 
 # On clicl 'get prediction'
 if submit_button:
@@ -245,26 +219,69 @@ if submit_button:
                 feat3.write(explain3 + " negatively impacts prediction")
 
     # Updated plot
-    fig = px.scatter(
-        plot_df,
-        x=xAxis,
-        y="price_PREDICTION",
-        labels={
-            "price_PREDICTION": "Predicted Price",
-            "sq_ft": "Square Footage",
-            "price": "Actual Price",
-            "acres": "Acres",
-            "bathrooms": "Bathrooms",
-            "bedrooms": "Bedrooms",
-            "is_New": "Predicted Home",
-        },
-        color="is_New",
-        symbol="is_New",
-    )
+    with fig1:
+        fig = px.scatter(
+            plot_df,
+            x=xAxis,
+            y="price_PREDICTION",
+            labels={
+                "price_PREDICTION": "Predicted Price",
+                "sq_ft": "Square Footage",
+                "price": "Actual Price",
+                "acres": "Acres",
+                "bathrooms": "Bathrooms",
+                "bedrooms": "Bedrooms",
+                "is_New": "Predicted Home",
+            },
+            color="is_New",
+            symbol="is_New",
+        )
 
-    fig.update_layout(
-        font=dict(size=16, color="LightBlue"),
-        title={"text": "Pricing Plot", "x": 0.5, "xanchor": "center", "yanchor": "top"},
-    )
+        fig.update_layout(
+            font=dict(size=16, color="LightBlue"),
+            title={
+                "text": "Pricing Plot",
+                "x": 0.5,
+                "xanchor": "center",
+                "yanchor": "top",
+            },
+        )
 
-    fig1.plotly_chart(fig)
+        st.plotly_chart(fig)
+else:
+    # Scatter plot
+    with fig1:
+        plotting_df = st.session_state.get("update_graph_df", predictions.assign(is_New = False))
+        fig = px.scatter(
+            plotting_df,
+            x=xAxis,
+            y="price_PREDICTION",
+            labels={
+                "price_PREDICTION": "Predicted Price",
+                "sq_ft": "Square Footage",
+                "price": "Actual Price",
+                "acres": "Acres",
+                "bathrooms": "Bathrooms",
+                "bedrooms": "Bedrooms",
+            },
+            color="is_New",
+            symbol="is_New",
+        )
+
+        fig.update_layout(
+            font=dict(size=16, color="LightBlue"),
+            title={
+                "text": "Pricing Plot",
+                "x": 0.5,
+                "xanchor": "center",
+                "yanchor": "top",
+            },
+        )
+
+        # fig.update_traces(
+        #     marker=dict(
+        #         size=10, color="blue", line=dict(width=2, color="DarkSlateGrey")
+        #     ),
+        #     selector=dict(mode="markers"),
+        # )
+        st.plotly_chart(fig)
