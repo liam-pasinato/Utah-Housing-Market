@@ -1,10 +1,10 @@
-import streamlit as st 
-import pandas as pd
-import numpy as np
-import json
-import plotly.express as px  
-import os
 import geopandas as gpd
+import json 
+import numpy as np
+import os
+import pandas as pd
+import plotly.express as px  
+import streamlit as st
 
 from PIL import Image
 
@@ -28,12 +28,10 @@ with st.expander("About:"):
     st.write("The house viewing page allows you to view a single listing in more detail, along with the real and predicted values for the house and explanations for the house price.")
     st.write("The price prediction page allows you to send a new listing to the DataRobot app, and ping the ML model to predict the price of the house with the feautures you have set. This includes explanations behind what is driving the model to estimate the house's value.")
 
-#MAP!
-map_data = pd.read_csv('./Data/clean_small_data.csv')
 color_choices = ['price', 'sq_ft', 'acres']
 
 #Geometry is at zipcode level, should make whatever we want to plot also be at zipcode level
-df_zip_agg = (map_data
+df_zip_agg = (df
     .groupby('zip_geometry')[color_choices]
     .mean()
     .reset_index()
@@ -57,14 +55,18 @@ json_string = (average_price_per_geometry
                .to_json()
               )
 geo_json = json.loads(json_string)
+average_price_per_geometry = average_price_per_geometry.rename(columns={'id_col': 'Map ID'})
 
 # We need a centroid sale lake city 40.7608° N, 111.8910° W
 color_column = 'price_per_sq_ft'
 
 fig = px.choropleth_mapbox(average_price_per_geometry, geojson=geo_json, color=color_column,
-                           locations="id_col", featureidkey="properties.id_col",
+                           locations="Map ID", featureidkey="properties.id_col",
                            center={"lat": 40.7608, "lon":-110.8910},
-                           mapbox_style="carto-positron", zoom=6,
+                           mapbox_style="carto-positron", zoom=5,
                            labels={'price_per_sq_ft': 'Price per Sq. Foot'})
-                           
+
+if 'ppsqft_data' not in st.session_state:  
+    st.session_state['ppsqft_data'] = average_price_per_geometry
+
 st.plotly_chart(fig)
