@@ -1,9 +1,19 @@
+<<<<<<< HEAD
 import numpy as np
 import os
+=======
+import os
+
+import numpy as np
+>>>>>>> f492d31734538bf086715a19b5132336cb14c912
 import pandas as pd
 from PIL import Image
 import plotly.express as px
 import streamlit as st
+<<<<<<< HEAD
+=======
+
+>>>>>>> f492d31734538bf086715a19b5132336cb14c912
 
 import DR_Predict
 import Helpers
@@ -21,20 +31,20 @@ st.write("# House Price Predictor")
 # Prediction form
 schools = df["elementary"].unique()
 
-#Autofill prediction form
-try: 
-    viewing_data = st.session_state['viewing_data']
-    sqft_def = int(viewing_data['sq_ft'].iloc[0])
-    car_def = viewing_data['car_garage'].iloc[0]
-    bdrm_def = viewing_data['bedrooms'].iloc[0]
-    patio_def = viewing_data['patios'].iloc[0]
-    bath_def = viewing_data['bathrooms'].iloc[0]
-    elementary_def = viewing_data['elementary'].iloc[0]
+# Autofill prediction form
+try:
+    viewing_data = st.session_state["viewing_data"]
+    sqft_def = int(viewing_data["sq_ft"].iloc[0])
+    car_def = viewing_data["car_garage"].iloc[0]
+    bdrm_def = viewing_data["bedrooms"].iloc[0]
+    patio_def = viewing_data["patios"].iloc[0]
+    bath_def = viewing_data["bathrooms"].iloc[0]
+    elementary_def = viewing_data["elementary"].iloc[0]
 
-    car_def = 0 if pd.isna(car_def) else int(car_def) 
-    bdrm_def = 0 if pd.isna(bdrm_def) else int(bdrm_def) 
-    patio_def = 0 if pd.isna(patio_def) else int(patio_def) 
-    bath_def = 0 if pd.isna(bath_def) else int(bath_def) 
+    car_def = 0 if pd.isna(car_def) else int(car_def)
+    bdrm_def = 0 if pd.isna(bdrm_def) else int(bdrm_def)
+    patio_def = 0 if pd.isna(patio_def) else int(patio_def)
+    bath_def = 0 if pd.isna(bath_def) else int(bath_def)
 
 
 except KeyError:
@@ -65,7 +75,9 @@ with st.form(key="MLform"):
         num_bdrm = st.number_input(
             "Bedrooms", min_value=1, max_value=12, value=bdrm_def, step=1
         )
-        num_patio = st.number_input("Patios", min_value=0, max_value=5, value=patio_def, step=1)
+        num_patio = st.number_input(
+            "Patios", min_value=0, max_value=5, value=patio_def, step=1
+        )
 
     with col3:
         num_bath = st.number_input(
@@ -89,7 +101,7 @@ xAxis = st.selectbox(
 )
 
 fig1 = st.container().empty()
-plotting_df = st.session_state.get('update_graph_df', predictions) 
+plotting_df = st.session_state.get("update_graph_df", predictions)
 # Scatter plot
 fig = px.scatter(
     plotting_df,
@@ -118,9 +130,9 @@ fig1.plotly_chart(fig)
 
 # On clicl 'get prediction'
 if submit_button:
-    try: 
-        predict_df = st.session_state['viewing_data']
-    
+    try:
+        predict_df = st.session_state["viewing_data"]
+
     except KeyError:
         rand = np.random.choice(df["listing_id"])
         predict_df = df.loc[df["listing_id"] == rand]
@@ -171,12 +183,12 @@ if submit_button:
     qual_strgth3 = str(res[0]["predictionExplanations"][2]["qualitativeStrength"])
 
     # Adding prediction to DF
-    predict_df['price_PREDICTION'] = res_price
-    plot_df=predictions.append(predict_df)
+    predict_df["price_PREDICTION"] = res_price
+    plot_df = predictions.append(predict_df)
     plot_df["is_New"] = False
-    plot_df.loc[plot_df.index == plot_df.index[-1],'is_New']=True
+    plot_df.loc[plot_df.index == plot_df.index[-1], "is_New"] = True
 
-    st.session_state['update_graph_df'] = plot_df
+    st.session_state["update_graph_df"] = plot_df
 
     # Removing geo data
     if explain1 == "zip_geometry":
@@ -242,30 +254,27 @@ if submit_button:
             else:
                 feat3.write(explain3 + " negatively impacts prediction")
 
-    #Updated plot
+    # Updated plot
     fig = px.scatter(
         plot_df,
         x=xAxis,
         y="price_PREDICTION",
         labels={
-        "price_PREDICTION": "Predicted Price",
-        "sq_ft": "Square Footage",
-        "price": "Actual Price",
-        "acres": "Acres",
-        "bathrooms": "Bathrooms",
-        "bedrooms": "Bedrooms",
-        "is_New": "Predicted Home",
-    },
+            "price_PREDICTION": "Predicted Price",
+            "sq_ft": "Square Footage",
+            "price": "Actual Price",
+            "acres": "Acres",
+            "bathrooms": "Bathrooms",
+            "bedrooms": "Bedrooms",
+            "is_New": "Predicted Home",
+        },
         color="is_New",
-        symbol='is_New',
+        symbol="is_New",
     )
 
     fig.update_layout(
-    font=dict(size=16, color="LightBlue"),
-    title={"text": "Pricing Plot", "x": 0.5, "xanchor": "center", "yanchor": "top"},
+        font=dict(size=16, color="LightBlue"),
+        title={"text": "Pricing Plot", "x": 0.5, "xanchor": "center", "yanchor": "top"},
     )
 
     fig1.plotly_chart(fig)
-
-
-
