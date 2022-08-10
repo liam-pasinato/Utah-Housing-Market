@@ -5,11 +5,11 @@ import os
 import pandas as pd
 import plotly.express as px  
 import streamlit as st
-
 from PIL import Image
 
 import DR_Predict
 import Helpers
+
 #from DR_Predict import DEPLOYMENT_ID
 
 #Title
@@ -40,7 +40,7 @@ df_zip_agg = (df
         sq_ft = lambda x: x.sq_ft.astype(int),
         acres = lambda x: x.acres.round(2),
         price_per_sq_ft = lambda x: (x.price / x.sq_ft).round(2)
-    )
+        )s
     )
 
 #Zip geometry is read as a string, need to transform it into an actual geometry column type (gpd)
