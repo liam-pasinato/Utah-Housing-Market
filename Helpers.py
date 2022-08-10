@@ -41,11 +41,8 @@ def prediction_variables(df, zip_df):
         explanation_dict[i - 1]["qual_str"] = df[
             f"EXPLANATION_{i}_QUALITATIVE_STRENGTH"
         ].iloc[0]
-        print(explanation_dict[i - 1]["expl"])
         if explanation_dict[i - 1]["expl"] == "Zip Geometry ":
-            import pdb
 
-            pdb.set_trace()
             geometry = str(df["zip_geometry"].iloc[0])
             explanation_dict[i - 1]["expl"] = zip_df.loc[
                 geometry == zip_df["zip_geometry"].astype(str), "Map ID"
