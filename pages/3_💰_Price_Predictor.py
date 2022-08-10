@@ -133,24 +133,7 @@ if submit_button:
     explanatory_dict = Helpers.get_explanatory_data(res)
     st.session_state["explanations"] = explanatory_dict
     Helpers.write_explanations(predict_expl, predict_expl_title, explanatory_dict)
-    # explain1 = res[0]["predictionExplanations"][0]["feature"]
-    # explain2 = res[0]["predictionExplanations"][1]["feature"]
-    # explain3 = res[0]["predictionExplanations"][2]["feature"]
-
-    # explain1 = Helpers.clean_string(explain1)
-    # explain2 = Helpers.clean_string(explain2)
-    # explain3 = Helpers.clean_string(explain3)
-
-    # value1 = str(res[0]["predictionExplanations"][0]["featureValue"])
-    # value2 = str(res[0]["predictionExplanations"][1]["featureValue"])
-    # value3 = str(res[0]["predictionExplanations"][2]["featureValue"])
-    # strength1 = res[0]["predictionExplanations"][0]["strength"]
-    # strength2 = res[0]["predictionExplanations"][1]["strength"]
-    # strength3 = res[0]["predictionExplanations"][2]["strength"]
-    # qual_strgth1 = str(res[0]["predictionExplanations"][0]["qualitativeStrength"])
-    # qual_strgth2 = str(res[0]["predictionExplanations"][1]["qualitativeStrength"])
-    # qual_strgth3 = str(res[0]["predictionExplanations"][2]["qualitativeStrength"])
-
+    
     # Adding prediction to DF
     predict_df["price_PREDICTION"] = res_price
     plot_df = predictions.append(predict_df)
@@ -158,45 +141,6 @@ if submit_button:
     plot_df.loc[plot_df.index == plot_df.index[-1], "is_New"] = True
 
     st.session_state["update_graph_df"] = plot_df
-
-    # predict_expl_title.write("> ### Prediction Explanations")
-
-    # # Show prediction explanations in 3 columns
-    # with predict_expl.container():
-    #     st.write(
-    #         "#### Showing the 3 features with the largest impact on your prediction:"
-    #     )
-    #     exp1, exp2, exp3 = st.columns(3, gap="medium")
-
-    #     with exp1:
-    #         feat1 = st.expander("1. " + explain1 + "  " + qual_strgth1)
-    #         feat1.write(explain1 + ": " + value1)
-    #         feat1.write("Strength: " + str(strength1))
-
-    #         if strength1 >= 0:
-    #             feat1.write(explain1 + " positively impacts prediction")
-    #         else:
-    #             feat1.write(explain1 + " negatively impacts prediction")
-
-    #     with exp2:
-    #         feat2 = st.expander("2. " + explain2 + "  " + qual_strgth2)
-    #         feat2.write(explain2 + ": " + value2)
-    #         feat2.write("Strength: " + str(strength2))
-
-    #         if strength2 >= 0:
-    #             feat2.write(explain2 + " positively impacts prediction")
-    #         else:
-    #             feat2.write(explain2 + " negatively impacts prediction")
-
-    #     with exp3:
-    #         feat3 = st.expander("3. " + explain3 + "  " + qual_strgth3)
-    #         feat3.write(explain3 + ": " + value3)
-    #         feat3.write("Strength: " + str(strength3))
-
-    #         if strength3 >= 0:
-    #             feat3.write(explain3 + " positively impacts prediction")
-    #         else:
-    #             feat3.write(explain3 + " negatively impacts prediction")
 
     # Updated plot
     with fig1:

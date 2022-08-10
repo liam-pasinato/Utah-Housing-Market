@@ -30,6 +30,7 @@ def plot_choropleth(geo_df, geo_json, color_column):
 
 def prediction_variables(df, zip_df):
     explanation_dict = {}
+
     for i in range(1, 4):
         explanation_dict[i - 1] = {}
         explanation_dict[i - 1]["expl"] = clean_string(
@@ -40,11 +41,19 @@ def prediction_variables(df, zip_df):
         explanation_dict[i - 1]["qual_str"] = df[
             f"EXPLANATION_{i}_QUALITATIVE_STRENGTH"
         ].iloc[0]
+        print(explanation_dict[i - 1]["expl"])
+        if explanation_dict[i - 1]["expl"] == "Zip Geometry ":
+            import pdb
 
-        # if explanation_dict[i-1]['expl']=='Zip Geometry':
-        # explanation_dict[i-1]['expl'] = zip_df[f'EXPLANATION_{i}_ACTUAL_VALUE'].iloc[0]
-        # explanation_dict[i-1]['value'] = zip_df[f'EXPLANATION_{i}_ACTUAL_VALUE'].iloc[0]
-
+            pdb.set_trace()
+            geometry = str(df["zip_geometry"].iloc[0])
+            explanation_dict[i - 1]["expl"] = zip_df.loc[
+                geometry == zip_df["zip_geometry"].astype(str), "Map ID"
+            ]
+            explanation_dict[i - 1]["value"] = zip_df.loc[
+                geometry == zip_df["zip_geometry"].astype(str), "price_per_sq_ft"
+            ]
+            print("Excecuted")
     return explanation_dict
 
 
@@ -83,7 +92,7 @@ def filter_range(df, range, column_name):
     return df.loc[range_check]
 
 
-def make_explanation_from_json(json, dict):
+def make_explanation_from_json(json, dict, zip):
     explanations_dict = {}
     for i in range(3):
         explanations_dict[i] = {}
@@ -91,6 +100,13 @@ def make_explanation_from_json(json, dict):
         explanations_dict[i]["value"] = json[0][dict][i]["featureValue"]
         explanations_dict[i]["str"] = json[0][dict][i]["strength"]
         explanations_dict[i]["qual_str"] = json[0][dict][i]["qualitativeStrength"]
+
+        if explanations_dict[i]["expl"] == "Zip Geometry ":
+            geo = explanations_dict[i]["value"]
+            explanations_dict[i]["expl"] = zip.loc[geo == zip["zip_geometry"], "Map ID"]
+            explanations_dict[i]["value"] = zip.loc[
+                geo == zip["zip_geometry"], "price_per_sq_ft"
+            ]
 
     return explanations_dict
 
