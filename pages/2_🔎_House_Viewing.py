@@ -32,51 +32,24 @@ if view_button:
     view_df = df.loc[df['listing_id']==int(listing_select)]
     st.session_state['viewing_data'] = view_df
 
+    house_img_check = list(view_df['exterior_image'])[0]
     house_img = str(list(view_df['exterior_image'])[0])
-    img_jpg = Image.open('./Data/HousingAllFeatures/' + house_img)
+
+    if not pd.isna(house_img_check):
+        house_img = str(house_img_check)
+        img_jpg = Image.open('./Data/HousingAllFeatures/' + house_img)
+    
+    else:
+        img_jpg = Image.open('./Data/no_img_available.jpeg')
+
     viewing_expl_df = predictions[predictions['listing_id']==listing_select]
     real = int(viewing_expl_df['price'])
     estimate = int(viewing_expl_df['price_PREDICTION']) 
 
-    col1, col2 = st.columns(2, gap = "medium")
-
     explanation_dict=Helpers.prediction_variables(viewing_expl_df, price_per_sqft_df)
-    print(explanation_dict)
-    with col1:
-        st.write('> #### Real Price: ' + "${:,.2f}".format(real))
-        st.image(img_jpg, caption= f'Listing ID: {listing_select}')
     
-    with col2:
-        st.write('> #### Predicted Price: ' + "${:,.2f}".format(estimate))
-        st.write('##### Factors influencing house price:')
-
-        #Explanation 1
-        feat1 = st.expander(f'1. {explanation_dict[0]["expl"]} {explanation_dict[0]["qual_str"]}')
-        feat1.write(f'{explanation_dict[0]["expl"]}: {explanation_dict[0]["value"]}')
-        feat1.write(f'Strength: {explanation_dict[0]["str"]}')
-        if explanation_dict[0]['str'] >= 0:
-            feat1.write(f'{explanation_dict[0]["expl"]} positively impacts prediction')
-        else:
-            feat1.write(f'{explanation_dict[0]["expl"]} negatively impacts prediction')
-
-        #Explanation 2
-        feat2 = st.expander('2. ' + explanation_dict[1]["expl"] + '  ' + explanation_dict[1]['qual_str'])
-        feat2.write(f'{explanation_dict[1]["expl"]}: {explanation_dict[1]["value"]}')
-        feat2.write(f'Strength: {explanation_dict[1]["str"]}')
-        if explanation_dict[1]['str'] >= 0:
-            feat2.write(f'{explanation_dict[1]["expl"]} positively impacts prediction')
-        else:
-            feat2.write(f'{explanation_dict[1]["expl"]} negatively impacts prediction')
-
-        #Explanation 3 
-        feat3 = st.expander('3. ' + explanation_dict[2]["expl"] + '  ' + explanation_dict[2]['qual_str'])
-        feat3.write(f'{explanation_dict[2]["expl"]}: {explanation_dict[2]["value"]}')
-        feat3.write(f'Strength: {explanation_dict[2]["str"]}')
-        if explanation_dict[2]['str'] >= 0:
-            feat3.write(f'{explanation_dict[2]["expl"]} positively impacts prediction')
-        else:
-            feat3.write(f'{explanation_dict[2]["expl"]} negatively impacts prediction')
-
+    Helpers.write_view_explanation(real, estimate, img_jpg, listing_select, explanation_dict)
+   
     st.write('> #### House Features')
 
     #cleaning view df

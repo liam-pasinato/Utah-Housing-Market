@@ -16,6 +16,7 @@ except KeyError:
     df = Helpers.read_data("./Data/HousingAllFeatures/HousingAllFeatures.csv")
 
 predictions = pd.read_csv("./Data/Prediction_Explanations.csv")
+price_per_sqft_df = st.session_state['ppsqft_data']
 
 st.write("# House Price Predictor")
 
@@ -112,14 +113,7 @@ if submit_button:
     predict_df["patios"] = num_patio
     predict_df["elementary"] = elementary
 
-    image_path = list(predict_df["exterior_image"])[0]
-
-    img = Image.open(os.path.join("./Data/HousingAllFeatures", image_path))
-    b64_img = DR_Predict.image_to_base64(img)
-
-    df_predict = predict_df.assign(exterior_image=b64_img)
-
-    df_predict_json = df_predict.to_json(orient="records")
+    df_predict_json = predict_df.to_json(orient="records")
 
     with loading:
         with st.spinner("Getting prediction, this might take a minute..."):
@@ -130,10 +124,10 @@ if submit_button:
     est_price = "${:,.2f}".format(res_price)
     price_est.write("## Estimated Price: " + est_price)
 
-    explanatory_dict = Helpers.get_explanatory_data(res)
+    explanatory_dict = Helpers.get_explanatory_data(res, price_per_sqft_df)
     st.session_state["explanations"] = explanatory_dict
     Helpers.write_explanations(predict_expl, predict_expl_title, explanatory_dict)
-    
+
     # Adding prediction to DF
     predict_df["price_PREDICTION"] = res_price
     plot_df = predictions.append(predict_df)
@@ -162,7 +156,7 @@ if submit_button:
         )
 
         fig.update_layout(
-            font=dict(size=16, color="LightBlue"),
+            font=dict(size=16, color="Black"),
             title={
                 "text": "Pricing Plot",
                 "x": 0.5,
@@ -184,7 +178,7 @@ else:
             "update_graph_df", predictions.assign(is_New=False)
         )
         fig = px.scatter(
-            plotting_df,
+                plotting_df,
             x=xAxis,
             y="price_PREDICTION",
             labels={
@@ -194,19 +188,20 @@ else:
                 "acres": "Acres",
                 "bathrooms": "Bathrooms",
                 "bedrooms": "Bedrooms",
+                "is_New": "Predicted Home"
             },
             color="is_New",
             symbol="is_New",
         )
 
         fig.update_layout(
-            font=dict(size=16, color="LightBlue"),
-            title={
-                "text": "Pricing Plot",
-                "x": 0.5,
-                "xanchor": "center",
-                "yanchor": "top",
-            },
+            font=dict(size=16, color="Black"),
+                title={
+                    "text": "Pricing Plot",
+                    "x": 0.5,
+                    "xanchor": "center",
+                    "yanchor": "top",
+                },
         )
 
         st.plotly_chart(fig)

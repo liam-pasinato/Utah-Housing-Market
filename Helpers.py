@@ -37,20 +37,23 @@ def prediction_variables(df, zip_df):
             df[f"EXPLANATION_{i}_FEATURE_NAME"].iloc[0]
         )
         explanation_dict[i - 1]["value"] = df[f"EXPLANATION_{i}_ACTUAL_VALUE"].iloc[0]
-        explanation_dict[i - 1]["str"] = df[f"EXPLANATION_{i}_STRENGTH"].iloc[0]
+        explanation_dict[i - 1]["str"] = (df[f"EXPLANATION_{i}_STRENGTH"].iloc[0]).round(3)
         explanation_dict[i - 1]["qual_str"] = df[
             f"EXPLANATION_{i}_QUALITATIVE_STRENGTH"
         ].iloc[0]
         if explanation_dict[i - 1]["expl"] == "Zip Geometry ":
 
             geometry = str(df["zip_geometry"].iloc[0])
-            explanation_dict[i - 1]["expl"] = zip_df.loc[
+
+            map_id = list(zip_df.loc[
                 geometry == zip_df["zip_geometry"].astype(str), "Map ID"
-            ]
-            explanation_dict[i - 1]["value"] = zip_df.loc[
+            ])[0]
+            explanation_dict[i - 1]["expl"] = f'Map ID #{map_id} '
+            pp_sqft = list(zip_df.loc[
                 geometry == zip_df["zip_geometry"].astype(str), "price_per_sq_ft"
-            ]
-            print("Excecuted")
+            ])[0]
+            explanation_dict[i - 1]["value"] = f'Price/Sq. Ft - ${pp_sqft}'
+           
     return explanation_dict
 
 
@@ -108,7 +111,7 @@ def make_explanation_from_json(json, dict, zip):
     return explanations_dict
 
 
-def get_explanatory_data(json_response):
+def get_explanatory_data(json_response, zip):
     explanations = defaultdict(list)
     pred_explanations = json_response[0]["predictionExplanations"]
 
@@ -116,14 +119,23 @@ def get_explanatory_data(json_response):
         feature = pred_explanations[i]["feature"]
         value = pred_explanations[i]["featureValue"]
         strength = pred_explanations[i]["strength"]
-        value = (
-            value
-            if feature != "zip_geometry"
-            else "High Cost Zipcode"
-            if strength >= 0
-            else "Low Cost Zipcode"
-        )
-        feature = clean_string(feature)
+        
+        if feature == 'zip_geometry':
+            geo = value
+            map_id = list(zip.loc[
+                geo == zip["zip_geometry"].astype(str), "Map ID"
+            ])[0]
+
+            feature = f'Map ID #{map_id} '
+
+            price_sqft = list(zip.loc[
+                geo == zip["zip_geometry"].astype(str), "price_per_sq_ft"
+            ])[0]
+
+            value = f'Price/Sq. Ft - ${price_sqft}'
+        
+        else:
+            feature = clean_string(feature)
 
         explanations["feature"].append(feature)
         explanations["value"].append(value)
@@ -198,3 +210,44 @@ def make_plot(df, xaxis_choice):
         color="is_New",
         symbol="is_New",
     )
+
+
+def write_view_explanation(real_price, est_price, img, listing, dict):
+    col1, col2 = st.columns(2, gap = "medium")
+
+    with col1:
+        st.write('> #### Real Price: ' + "${:,.2f}".format(real_price))
+        st.image(img, caption= f'Listing ID: {listing}')
+    
+    with col2:
+        st.write('> #### Predicted Price: ' + "${:,.2f}".format(est_price))
+        st.write('##### Factors influencing house price:')
+
+        #Explanation 1
+        feat1 = st.expander(f'1. {dict[0]["expl"]} {dict[0]["qual_str"]}')
+        feat1.write(f'{dict[0]["expl"]}: {dict[0]["value"]}')
+        feat1.write(f'Strength: {dict[0]["str"]}')
+        if dict[0]['str'] >= 0:
+            feat1.write(f'{dict[0]["expl"]} positively impacts prediction')
+        else:
+            feat1.write(f'{dict[0]["expl"]} negatively impacts prediction')
+
+        #Explanation 2
+        feat2 = st.expander(f'2. {dict[1]["expl"]} {dict[1]["qual_str"]}')
+        feat2.write(f'{dict[1]["expl"]}: {dict[1]["value"]}')
+        feat2.write(f'Strength: {dict[1]["str"]}')
+        if dict[1]['str'] >= 0:
+            feat2.write(f'{dict[1]["expl"]} positively impacts prediction')
+        else:
+            feat2.write(f'{dict[1]["expl"]} negatively impacts prediction')
+        
+        #Explanation 3 
+        feat3 = st.expander(f'3. {dict[2]["expl"]} {dict[2]["qual_str"]}')
+        feat3.write(f'{dict[2]["expl"]}: {dict[2]["value"]}')
+        feat3.write(f'Strength: {dict[2]["str"]}')
+        if dict[2]['str'] >= 0:
+            feat3.write(f'{dict[2]["expl"]} positively impacts prediction')
+        else:
+            feat3.write(f'{dict[2]["expl"]} negatively impacts prediction')
+        
+    return
