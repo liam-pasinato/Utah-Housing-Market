@@ -6,6 +6,7 @@ import plotly.express as px
 import streamlit as st
 from PIL import Image
 
+
 @st.cache(allow_output_mutation=True)
 def read_data(path):
     df = pd.read_csv(path).loc[lambda x: ~pd.isna(x.bedrooms)]
@@ -23,18 +24,18 @@ def plot_choropleth(geo_df, geo_json, color_column):
         center={"lat": 40.1608, "lon": -110.8910},
         mapbox_style="carto-positron",
         zoom=4.7,
-        labels={"price_per_sq_ft": "Price per Sq. Foot"}
+        labels={"price_per_sq_ft": "Price per Sq. Foot"},
     )
 
     fig.update_layout(
-            font=dict(size=16, color="Black"),
-                title={
-                    "text": "Displaying Data for Featured Zipcodes",
-                    "x": 0.4,
-                    "xanchor": "center",
-                    "yanchor": "top",
-                },
-        )
+        font=dict(size=16, color="Black"),
+        title={
+            "text": "Displaying Data for Featured Zipcodes",
+            "x": 0.4,
+            "xanchor": "center",
+            "yanchor": "top",
+        },
+    )
     return st.plotly_chart(fig)
 
 
@@ -47,7 +48,9 @@ def prediction_variables(df, zip_df):
             df[f"EXPLANATION_{i}_FEATURE_NAME"].iloc[0]
         )
         explanation_dict[i - 1]["value"] = df[f"EXPLANATION_{i}_ACTUAL_VALUE"].iloc[0]
-        explanation_dict[i - 1]["str"] = (df[f"EXPLANATION_{i}_STRENGTH"].iloc[0]).round(3)
+        explanation_dict[i - 1]["str"] = (
+            df[f"EXPLANATION_{i}_STRENGTH"].iloc[0]
+        ).round(3)
         explanation_dict[i - 1]["qual_str"] = df[
             f"EXPLANATION_{i}_QUALITATIVE_STRENGTH"
         ].iloc[0]
@@ -55,15 +58,17 @@ def prediction_variables(df, zip_df):
 
             geometry = str(df["zip_geometry"].iloc[0])
 
-            map_id = list(zip_df.loc[
-                geometry == zip_df["zip_geometry"].astype(str), "Map ID"
-            ])[0]
-            explanation_dict[i - 1]["expl"] = f'Map ID #{map_id} '
-            pp_sqft = list(zip_df.loc[
-                geometry == zip_df["zip_geometry"].astype(str), "price_per_sq_ft"
-            ])[0]
-            explanation_dict[i - 1]["value"] = f'Price/Sq. Ft - ${pp_sqft}'
-           
+            map_id = list(
+                zip_df.loc[geometry == zip_df["zip_geometry"].astype(str), "Map ID"]
+            )[0]
+            explanation_dict[i - 1]["expl"] = f"Map ID #{map_id} "
+            pp_sqft = list(
+                zip_df.loc[
+                    geometry == zip_df["zip_geometry"].astype(str), "price_per_sq_ft"
+                ]
+            )[0]
+            explanation_dict[i - 1]["value"] = f"Price/Sq. Ft - ${pp_sqft}"
+
     return explanation_dict
 
 
@@ -110,21 +115,19 @@ def get_explanatory_data(json_response, zip):
         feature = pred_explanations[i]["feature"]
         value = pred_explanations[i]["featureValue"]
         strength = round(pred_explanations[i]["strength"], 3)
-        
-        if feature == 'zip_geometry':
+
+        if feature == "zip_geometry":
             geo = value
-            map_id = list(zip.loc[
-                geo == zip["zip_geometry"].astype(str), "Map ID"
-            ])[0]
+            map_id = list(zip.loc[geo == zip["zip_geometry"].astype(str), "Map ID"])[0]
 
-            feature = f'Map ID #{map_id} '
+            feature = f"Map ID #{map_id} "
 
-            price_sqft = list(zip.loc[
-                geo == zip["zip_geometry"].astype(str), "price_per_sq_ft"
-            ])[0]
+            price_sqft = list(
+                zip.loc[geo == zip["zip_geometry"].astype(str), "price_per_sq_ft"]
+            )[0]
 
-            value = f'Price/Sq. Ft - ${price_sqft}'
-        
+            value = f"Price/Sq. Ft - ${price_sqft}"
+
         else:
             feature = clean_string(feature)
 
@@ -204,52 +207,54 @@ def make_plot(df, xaxis_choice):
 
 
 def write_view_explanation(real_price, est_price, img, listing, dict):
-    col1, col2 = st.columns(2, gap = "medium")
+    col1, col2 = st.columns(2, gap="medium")
 
     with col1:
-        st.write('> #### Real Price: ' + "${:,.2f}".format(real_price))
-        st.image(img, caption= f'Listing ID: {listing}')
-    
-    with col2:
-        st.write('> #### Predicted Price: ' + "${:,.2f}".format(est_price))
-        st.write('##### Factors influencing house price:')
+        st.write("> #### Real Price: " + "${:,.2f}".format(real_price))
+        st.image(img, caption=f"Listing ID: {listing}")
 
-        #Explanation 1
+    with col2:
+        st.write("> #### Predicted Price: " + "${:,.2f}".format(est_price))
+        st.write("##### Factors influencing house price:")
+
+        # Explanation 1
         feat1 = st.expander(f'1. {dict[0]["expl"]} {dict[0]["qual_str"]}')
         feat1.write(f'{dict[0]["expl"]}: {dict[0]["value"]}')
         feat1.write(f'Strength: {dict[0]["str"]}')
-        if dict[0]['str'] >= 0:
+        if dict[0]["str"] >= 0:
             feat1.write(f'{dict[0]["expl"]} positively impacts prediction')
         else:
             feat1.write(f'{dict[0]["expl"]} negatively impacts prediction')
 
-        #Explanation 2
+        # Explanation 2
         feat2 = st.expander(f'2. {dict[1]["expl"]} {dict[1]["qual_str"]}')
         feat2.write(f'{dict[1]["expl"]}: {dict[1]["value"]}')
         feat2.write(f'Strength: {dict[1]["str"]}')
-        if dict[1]['str'] >= 0:
+        if dict[1]["str"] >= 0:
             feat2.write(f'{dict[1]["expl"]} positively impacts prediction')
         else:
             feat2.write(f'{dict[1]["expl"]} negatively impacts prediction')
-        
-        #Explanation 3 
+
+        # Explanation 3
         feat3 = st.expander(f'3. {dict[2]["expl"]} {dict[2]["qual_str"]}')
         feat3.write(f'{dict[2]["expl"]}: {dict[2]["value"]}')
         feat3.write(f'Strength: {dict[2]["str"]}')
-        if dict[2]['str'] >= 0:
+        if dict[2]["str"] >= 0:
             feat3.write(f'{dict[2]["expl"]} positively impacts prediction')
         else:
             feat3.write(f'{dict[2]["expl"]} negatively impacts prediction')
-        
+
     return
+
 
 def title_and_logo():
-    logo = Image.open('./Data/DR_logo.jpg')
-    st.set_page_config(page_title = 'Utah Housing Market', page_icon = logo)
+    logo = Image.open("./Data/DR_logo.png")
+    st.set_page_config(page_title="Utah Housing Market", page_icon=logo)
     return
 
+
 def hide_streamlit_menu():
-    hide_menu =  """
+    hide_menu = """
         <style>
         #MainMenu {visibility: hidden; }
         footer {visibility: hidden;}
