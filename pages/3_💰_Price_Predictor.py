@@ -91,7 +91,7 @@ price_est = st.container().empty()
 predict_expl_title = st.container().empty()
 predict_expl = st.container().empty()
 
-st.write("> ### House Price Plot")
+st.write("> ## House Price Plot")
 
 # SelectBox for x-axis
 xAxis = st.selectbox(
@@ -122,7 +122,7 @@ if submit_button:
     df_predict_json = predict_df.to_json(orient="records")
 
     with loading:
-        with st.spinner("Getting prediction, this might take a minute..."):
+        with st.spinner("Getting prediction, hang on..."):
             res = DR_Predict.make_prediction(df_predict_json, input_type="json")
 
     # Getting predictions & explanations from DR
@@ -160,12 +160,13 @@ if submit_button:
             color="is_New",
             symbol="is_New",
         )
+        vs_title = Helpers.clean_string(xAxis)
 
         fig.update_layout(
             font=dict(size=16, color="Black"),
             title={
-                "text": "Pricing Plot",
-                "x": 0.5,
+                "text": f"Predicted Price vs {vs_title}",
+                "x": 0.4,
                 "xanchor": "center",
                 "yanchor": "top",
             },
@@ -199,12 +200,13 @@ else:
             color="is_New",
             symbol="is_New",
         )
+        vs_title = Helpers.clean_string(xAxis)
 
         fig.update_layout(
             font=dict(size=16, color="Black"),
                 title={
-                    "text": "Pricing Plot",
-                    "x": 0.5,
+                    "text": f"Predicted Price vs {vs_title}",
+                    "x": 0.4,
                     "xanchor": "center",
                     "yanchor": "top",
                 },

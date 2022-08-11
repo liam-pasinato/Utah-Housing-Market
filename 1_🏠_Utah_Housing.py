@@ -78,3 +78,4 @@ if "ppsqft_data" not in st.session_state:
     st.session_state["ppsqft_data"] = average_price_per_geometry
 
 Helpers.plot_choropleth(average_price_per_geometry, geo_json, "price_per_sq_ft")
+

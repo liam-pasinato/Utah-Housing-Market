@@ -56,7 +56,7 @@ if view_button:
     
     Helpers.write_view_explanation(real, estimate, img_jpg, listing_select, explanation_dict)
    
-    st.write('> #### House Features')
+    st.write('> ### House Features')
 
     #cleaning view df
     view_df = view_df.drop(['zip_geometry', 'exterior_image'], axis=1)
@@ -68,7 +68,8 @@ if view_button:
     
     st.write(view_df)
 
-st.write('> #### Available Viewings')
+st.write('> ### Available Viewings')
+st.write('##### Use the filters below to find the listing you wish to view')
 
 #Multiselect boxes for filtering
 filt1, filt2, filt3 = st.columns(3, gap='medium')

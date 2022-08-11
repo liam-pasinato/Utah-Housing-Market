@@ -20,11 +20,21 @@ def plot_choropleth(geo_df, geo_json, color_column):
         color=color_column,
         locations="Map ID",
         featureidkey="properties.id_col",
-        center={"lat": 40.7608, "lon": -110.8910},
+        center={"lat": 40.1608, "lon": -110.8910},
         mapbox_style="carto-positron",
-        zoom=5,
-        labels={"price_per_sq_ft": "Price per Sq. Foot"},
+        zoom=4.7,
+        labels={"price_per_sq_ft": "Price per Sq. Foot"}
     )
+
+    fig.update_layout(
+            font=dict(size=16, color="Black"),
+                title={
+                    "text": "Displaying Data for Featured Zipcodes",
+                    "x": 0.4,
+                    "xanchor": "center",
+                    "yanchor": "top",
+                },
+        )
     return st.plotly_chart(fig)
 
 
@@ -90,25 +100,6 @@ def filter_range(df, range, column_name):
     range_check = (df[column_name] >= low_range) & (df[column_name] <= high_range)
 
     return df.loc[range_check]
-
-##
-def make_explanation_from_json(json, dict, zip):
-    explanations_dict = {}
-    for i in range(3):
-        explanations_dict[i] = {}
-        explanations_dict[i]["expl"] = clean_string(json[0][dict][i]["feature"])
-        explanations_dict[i]["value"] = json[0][dict][i]["featureValue"]
-        explanations_dict[i]["str"] = json[0][dict][i]["strength"]
-        explanations_dict[i]["qual_str"] = json[0][dict][i]["qualitativeStrength"]
-
-        if explanations_dict[i]["expl"] == "Zip Geometry ":
-            geo = explanations_dict[i]["value"]
-            explanations_dict[i]["expl"] = zip.loc[geo == zip["zip_geometry"], "Map ID"]
-            explanations_dict[i]["value"] = zip.loc[
-                geo == zip["zip_geometry"], "price_per_sq_ft"
-            ]
-
-    return explanations_dict
 
 
 def get_explanatory_data(json_response, zip):
