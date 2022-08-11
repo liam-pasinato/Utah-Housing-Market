@@ -244,7 +244,7 @@ def write_view_explanation(real_price, est_price, img, listing, dict):
     return
 
 def title_and_logo():
-    logo = Image.open('./Data/DR_logo.jpeg')
+    logo = Image.open('./Data/DR_logo.jpg')
     st.set_page_config(page_title = 'Utah Housing Market', page_icon = logo)
     return
 
