@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-
+from PIL import Image
 
 @st.cache(allow_output_mutation=True)
 def read_data(path):
@@ -91,7 +91,7 @@ def filter_range(df, range, column_name):
 
     return df.loc[range_check]
 
-
+##
 def make_explanation_from_json(json, dict, zip):
     explanations_dict = {}
     for i in range(3):
@@ -118,7 +118,7 @@ def get_explanatory_data(json_response, zip):
     for i in range(3):
         feature = pred_explanations[i]["feature"]
         value = pred_explanations[i]["featureValue"]
-        strength = pred_explanations[i]["strength"]
+        strength = round(pred_explanations[i]["strength"], 3)
         
         if feature == 'zip_geometry':
             geo = value
@@ -250,4 +250,19 @@ def write_view_explanation(real_price, est_price, img, listing, dict):
         else:
             feat3.write(f'{dict[2]["expl"]} negatively impacts prediction')
         
+    return
+
+def title_and_logo():
+    logo = Image.open('./Data/DR_logo.jpeg')
+    st.set_page_config(page_title = 'Utah Housing Market', page_icon = logo)
+    return
+
+def hide_streamlit_menu():
+    hide_menu =  """
+        <style>
+        #MainMenu {visibility: hidden; }
+        footer {visibility: hidden;}
+        </style>
+        """
+    st.markdown(hide_menu, unsafe_allow_html=True)
     return

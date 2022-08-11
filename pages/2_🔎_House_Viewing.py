@@ -9,6 +9,12 @@ import streamlit as st
 import DR_Predict
 import Helpers
 
+# Webpage title & icon
+Helpers.title_and_logo()
+
+# Hide streamlit menu & watermark
+Helpers.hide_streamlit_menu()
+
 predictions = pd.read_csv('./Data/Prediction_Explanations.csv')
 small_df = pd.read_csv('./Data/clean_small_data.csv')
 

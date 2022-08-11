@@ -10,7 +10,11 @@ from PIL import Image
 import DR_Predict
 import Helpers
 
-# from DR_Predict import DEPLOYMENT_ID
+# Webpage title & icon 
+Helpers.title_and_logo()
+
+# Hide streamlit menu & watermark
+Helpers.hide_streamlit_menu()
 
 # Title
 st.title("*Utah* Real Estate Market")

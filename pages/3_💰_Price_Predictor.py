@@ -9,6 +9,12 @@ import streamlit as st
 import DR_Predict
 import Helpers
 
+# Webpage title & icon
+Helpers.title_and_logo()
+
+# Hide streamlit menu & watermark
+Helpers.hide_streamlit_menu()
+
 # Import DFs
 try:
     df = st.session_state["base_data"]
