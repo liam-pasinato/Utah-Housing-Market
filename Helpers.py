@@ -1,5 +1,7 @@
 from collections import defaultdict
 
+import geopandas as gpd
+import json
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -9,9 +11,51 @@ from PIL import Image
 
 @st.cache(allow_output_mutation=True)
 def read_data(path):
-    df = pd.read_csv(path).loc[lambda x: ~pd.isna(x.bedrooms)]
-    st.session_state["base_data"] = df
-    return df
+    try:
+        return st.session_state["base_data"]
+    except KeyError:
+        df = pd.read_csv(path).loc[lambda x: ~pd.isna(x.bedrooms)]
+        st.session_state["base_data"] = df
+        return df
+
+def build_map_data():
+    try: 
+        return st.session_state["ppsqft_data"], st.session_state["geo"]
+    except KeyError:
+        base_data = read_data("./Data/HousingAllFeatures/HousingAllFeatures.csv")
+
+        color_choices = ["price", "sq_ft", "acres"]
+        # Geometry is at zipcode level, should make whatever we want to plot also be at zipcode level
+        df_zip_agg = (
+            base_data.groupby("zip_geometry")[color_choices]
+            .mean()
+            .reset_index()
+            .assign(
+                price=lambda x: x.price.astype(int),
+                sq_ft=lambda x: x.sq_ft.astype(int),
+                acres=lambda x: x.acres.round(2),
+                price_per_sq_ft=lambda x: (x.price / x.sq_ft).round(2),
+            )
+        )
+        # Zip geometry is read as a string, need to transform it into an actual geometry column type (gpd)
+        # https://stackoverflow.com/questions/56433138/converting-a-column-of-polygons-from-string-to-geopandas-geometry
+        df_zip_agg["zip_geometry"] = gpd.GeoSeries.from_wkt(df_zip_agg["zip_geometry"])
+        average_price_per_geometry = gpd.GeoDataFrame(
+            df_zip_agg, geometry="zip_geometry"
+        ).assign(id_col=lambda x: x.index)
+        # Polygon doesn't look like plotly format
+        # We can fix with a small trick (this was a guess on my part). Another choice was an in depth for loop
+        json_string = average_price_per_geometry.loc[
+            ~pd.isna(average_price_per_geometry.zip_geometry), ["id_col", "zip_geometry"]
+        ].to_json()
+        geo_json = json.loads(json_string)
+
+        average_price_per_geometry = average_price_per_geometry.rename(
+    columns={"id_col": "Map ID"}
+)
+        st.session_state["ppsqft_data"] = average_price_per_geometry
+        st.session_state["geo"] = geo_json
+        return average_price_per_geometry, geo_json
 
 
 def plot_choropleth(geo_df, geo_json, color_column):

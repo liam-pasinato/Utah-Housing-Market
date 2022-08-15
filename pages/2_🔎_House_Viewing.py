@@ -17,13 +17,9 @@ Helpers.hide_streamlit_menu()
 
 predictions = pd.read_csv('./Data/Prediction_Explanations.csv')
 small_df = pd.read_csv('./Data/clean_small_data.csv')
+df = Helpers.read_data('./Data/HousingAllFeatures/HousingAllFeatures.csv')
 
-try:
-    df = st.session_state['base_data']
-except KeyError:
-    df = Helpers.read_data('./Data/HousingAllFeatures/HousingAllFeatures.csv')
-
-price_per_sqft_df = st.session_state['ppsqft_data']
+average_price_per_geometry, geo_json = Helpers.build_map_data()
 
 st.write('# House Viewings')
 
@@ -52,7 +48,7 @@ if view_button:
     real = int(viewing_expl_df['price'])
     estimate = int(viewing_expl_df['price_PREDICTION']) 
 
-    explanation_dict=Helpers.prediction_variables(viewing_expl_df, price_per_sqft_df)
+    explanation_dict=Helpers.prediction_variables(viewing_expl_df, average_price_per_geometry)
     
     Helpers.write_view_explanation(real, estimate, img_jpg, listing_select, explanation_dict)
    

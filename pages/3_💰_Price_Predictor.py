@@ -16,13 +16,11 @@ Helpers.title_and_logo()
 Helpers.hide_streamlit_menu()
 
 # Import DFs
-try:
-    df = st.session_state["base_data"]
-except KeyError:
-    df = Helpers.read_data("./Data/HousingAllFeatures/HousingAllFeatures.csv")
+df = Helpers.read_data("./Data/HousingAllFeatures/HousingAllFeatures.csv")
 
 predictions = pd.read_csv("./Data/Prediction_Explanations.csv")
-price_per_sqft_df = st.session_state['ppsqft_data']
+
+average_price_per_geometry, geo_json = Helpers.build_map_data()
 
 st.write("# House Price Predictor")
 
@@ -130,7 +128,7 @@ if submit_button:
     est_price = "${:,.2f}".format(res_price)
     price_est.write("## Estimated Price: " + est_price)
 
-    explanatory_dict = Helpers.get_explanatory_data(res, price_per_sqft_df)
+    explanatory_dict = Helpers.get_explanatory_data(res, average_price_per_geometry)
     st.session_state["explanations"] = explanatory_dict
     Helpers.write_explanations(predict_expl, predict_expl_title, explanatory_dict)
 
